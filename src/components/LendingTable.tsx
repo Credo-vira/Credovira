@@ -1,7 +1,7 @@
-import { getSolendMarkets } from "@/lib/getSolendUserPositions";
+import { getSolendUserPositions } from "@/lib/getSolendUserPositions";
 
 export default async function LendingTable() {
-  const solendData = await getSolendMarkets();
+  const solendData = await getSolendUserPositions();
 
   function formatNumber(n: number) {
     return n.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -40,11 +40,11 @@ export default async function LendingTable() {
             const risk = calculateRisk(item.ltv, item.borrowApy, item.tvl);
             return (
               <tr key={idx} className="border-b hover:bg-gray-50">
-                <td className="py-2 px-3">{item.token}</td>
-                <td className="py-2 px-3 text-green-600 font-medium">{item.apy.toFixed(2)}%</td>
+                <td className="py-2 px-3">{item.symbol}</td>
+                <td className="py-2 px-3 text-green-600 font-medium">{item.supplyApy.toFixed(2)}%</td>
                 <td className="py-2 px-3 text-red-500">{item.borrowApy.toFixed(2)}%</td>
                 <td className="py-2 px-3">{item.ltv.toFixed(0)}%</td>
-                <td className="py-2 px-3">${formatNumber(item.tvl)}</td>
+                <td className="py-2 px-3">${item.tvl.toLocaleString()}</td>
                 <td className="py-2 px-3">{riskIndicator(risk)}</td>
               </tr>
             );
