@@ -10,7 +10,7 @@ export default function UserPositions() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const data = await getSolendUserPositions('969AsGFCHevB5EzYmuoDfwMPn6Xo4gnkDiFUPMZzv3qs');
+        const data = await getSolendUserPositions();
         setPositions(data);
       } catch (e: any) {
         setError(e.message);

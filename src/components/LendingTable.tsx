@@ -1,11 +1,20 @@
-import { getSolendUserPositions } from "@/lib/getSolendUserPositions";
+'use client'
 
-export default async function LendingTable() {
-  const solendData = await getSolendUserPositions();
+import {fetchReserveStats} from '@/lib/getSolendMarkets'
+import { useEffect, useState } from 'react';
 
-  function formatNumber(n: number) {
-    return n.toLocaleString("en-US", { maximumFractionDigits: 0 });
-  }
+export default function LendingTable() {
+  const [solendData, setSolendData] = useState();
+
+  useEffect(() => {
+    const getData = async () => {
+      const data = await fetchReserveStats();
+      setSolendData(data.results)
+    }
+
+    getData();
+  },[])
+
   
   function calculateRisk(ltv: number, borrowApy: number, tvl: number) {
     let score = 0;
@@ -28,24 +37,40 @@ export default async function LendingTable() {
         <thead className="bg-gray-100 border-b">
           <tr>
             <th className="py-2 px-3">Токен</th>
-            <th className="py-2 px-3">Supply APY</th>
-            <th className="py-2 px-3">Borrow APY</th>
-            <th className="py-2 px-3">LTV</th>
-            <th className="py-2 px-3">TVL</th>
-            <th className="py-2 px-3">Риск</th>
+            <th className="py-2 px-3 text-right">Supply APY</th>
+            <th className="py-2 px-3 text-right">Borrow APY</th>
+            <th className="py-2 px-3 text-right">LTV</th>
+            <th className="py-2 px-3 text-right">Total liquidity</th>
+            <th className="py-2 px-3 text-right">Риск</th>
           </tr>
         </thead>
         <tbody>
-          {solendData.map((item, idx) => {
-            const risk = calculateRisk(item.ltv, item.borrowApy, item.tvl);
+          {solendData && solendData.map((item, i) => {
+            const { reserve, rates } = item;
+            const liquidity = reserve?.liquidity;
+
+            const symbol = liquidity?.symbol || liquidity?.mintPubkey.slice(0, 10) + "...";
+
+            const tokenPrice = 1; 
+
+            const supplyAPY = parseFloat(rates?.supplyInterest || "0").toFixed(2);
+            const borrowAPY = parseFloat(rates?.borrowInterest || "0").toFixed(2);
+            const ltv = (reserve?.config?.loanToValueRatio || 0) / 100;
+
+            const available = parseFloat(liquidity?.availableAmount || "0") / Math.pow(10, liquidity?.mintDecimals || 6);
+            const borrowed = parseFloat(liquidity?.borrowedAmountWads || "0") / 1e18; // в WAD
+            const tvl = ((available + borrowed) * tokenPrice).toFixed(2);
+
+            const riskScore = calculateRisk(ltv * 100, parseFloat(borrowAPY), parseFloat(tvl));
+
             return (
-              <tr key={idx} className="border-b hover:bg-gray-50">
-                <td className="py-2 px-3">{item.symbol}</td>
-                <td className="py-2 px-3 text-green-600 font-medium">{item.supplyApy.toFixed(2)}%</td>
-                <td className="py-2 px-3 text-red-500">{item.borrowApy.toFixed(2)}%</td>
-                <td className="py-2 px-3">{item.ltv.toFixed(0)}%</td>
-                <td className="py-2 px-3">${item.tvl.toLocaleString()}</td>
-                <td className="py-2 px-3">{riskIndicator(risk)}</td>
+              <tr key={i} className="border-t hover:bg-gray-50">
+                <td className="p-3">{symbol}</td>
+                <td className="p-3 text-right">{supplyAPY}%</td>
+                <td className="p-3 text-right">{borrowAPY}%</td>
+                <td className="p-3 text-right">{(ltv * 100).toFixed(0)}%</td>
+                <td className="p-3 text-right">${tvl}</td>
+                <td className="p-3 text-right">{riskIndicator(riskScore)}</td>
               </tr>
             );
           })}
