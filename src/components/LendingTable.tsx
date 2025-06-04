@@ -3,8 +3,27 @@
 import { fetchReserveStats } from '@/lib/getSolendMarkets'
 import { useEffect, useState } from 'react';
 
+type ReserveStats = {
+  reserve: {
+    liquidity: {
+      symbol?: string;
+      mintPubkey: string;
+      availableAmount?: string;
+      borrowedAmountWads?: string;
+      mintDecimals?: number;
+    };
+    config?: {
+      loanToValueRatio?: number;
+    };
+  };
+  rates?: {
+    supplyInterest?: string;
+    borrowInterest?: string;
+  };
+};
+
 export default function LendingTable() {
-  const [solendData, setSolendData] = useState([]);
+  const [solendData, setSolendData] = useState<ReserveStats[]>([]);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;

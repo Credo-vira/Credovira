@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+interface SolendDeposit {
+  mintAddress: string;
+  amount: number;
+  marketValue: number;
+}
+
 export function useSolendPositions(publicKey: string | null) {
-  const [positions, setPositions] = useState<any[] | null>(null);
+  const [positions, setPositions] = useState<SolendDeposit[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

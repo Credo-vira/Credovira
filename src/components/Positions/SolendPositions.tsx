@@ -3,8 +3,16 @@
 import { getSolendUserPositions } from '@/lib/getSolendUserPositions';
 import { useEffect, useState } from 'react';
 
+interface UserPosition {
+  symbol: string;
+  deposited: number;
+  borrowed: number;
+  supplyApy: number;
+  borrowApy: number;
+}
+
 export default function UserPositions() {
-  const [positions, setPositions] = useState<any[]>([]);
+  const [positions, setPositions] = useState<UserPosition[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -12,8 +20,12 @@ export default function UserPositions() {
       try {
         const data = await getSolendUserPositions();
         setPositions(data);
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e) {
+          if (e instanceof Error) {
+            setError(e.message);
+          } else {
+            setError('Error');
+  }
       }
     }
 
