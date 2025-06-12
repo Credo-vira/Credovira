@@ -26,14 +26,14 @@ export default function LendingTable() {
   const [solendData, setSolendData] = useState<ReserveStats[]>([]);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
+  const [riskFilter, setRiskFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all');
   const itemsPerPage = 10;
 
   useEffect(() => {
     const getData = async () => {
       const data = await fetchReserveStats();
-      setSolendData(data.results)
-    }
-
+      setSolendData(data.results);
+    };
     getData();
   }, []);
 
@@ -78,6 +78,13 @@ export default function LendingTable() {
         riskScore,
       };
     })
+    .filter(item => {
+      if (riskFilter === 'all') return true;
+      if (riskFilter === 'low') return item.riskScore <= 1;
+      if (riskFilter === 'medium') return item.riskScore <= 3 && item.riskScore > 1;
+      if (riskFilter === 'high') return item.riskScore > 3;
+      return true;
+    })
     .sort((a, b) => sortOrder === 'asc' ? a.tvl - b.tvl : b.tvl - a.tvl);
 
   const totalPages = Math.ceil(processedData.length / itemsPerPage);
@@ -86,6 +93,34 @@ export default function LendingTable() {
   return (
     <div className="p-6 bg-white rounded-xl shadow-md mt-8">
       <h2 className="text-2xl font-semibold mb-4">📊 DeFi кредитные рынки (Solend)</h2>
+
+      <div className="mb-4 flex gap-2 text-sm">
+        <button
+          className={`px-3 py-1 rounded ${riskFilter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          onClick={() => { setRiskFilter('all'); setCurrentPage(1); }}
+        >
+          Все
+        </button>
+        <button
+          className={`px-3 py-1 rounded ${riskFilter === 'low' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+          onClick={() => { setRiskFilter('low'); setCurrentPage(1); }}
+        >
+          🟢 Низкий
+        </button>
+        <button
+          className={`px-3 py-1 rounded ${riskFilter === 'medium' ? 'bg-yellow-500 text-white' : 'bg-gray-200'}`}
+          onClick={() => { setRiskFilter('medium'); setCurrentPage(1); }}
+        >
+          🟠 Средний
+        </button>
+        <button
+          className={`px-3 py-1 rounded ${riskFilter === 'high' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
+          onClick={() => { setRiskFilter('high'); setCurrentPage(1); }}
+        >
+          🔴 Высокий
+        </button>
+      </div>
+
       <table className="w-full text-sm text-left">
         <thead className="bg-gray-100 border-b">
           <tr>
@@ -96,7 +131,7 @@ export default function LendingTable() {
             <th
               className="py-2 px-3 text-right cursor-pointer"
               onClick={() => {
-                setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
+                setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
                 setCurrentPage(1);
               }}
             >

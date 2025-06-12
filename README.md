@@ -11,6 +11,10 @@ Credovira is a real-time dashboard for monitoring DeFi lending markets on Solana
 - User reputation system through NFT-based ratings
 - Built-in wallet connection for personalized insights
 
+## Demo
+
+[Demo](https://credovira.onrender.com/)
+
 ## Technology Stack
 
 - Next.js 15 (App Router)
