@@ -28,6 +28,8 @@ export default function LendingTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [riskFilter, setRiskFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all');
   const itemsPerPage = 10;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
 
   useEffect(() => {
     const getData = async () => {
@@ -36,6 +38,16 @@ export default function LendingTable() {
     };
     getData();
   }, []);
+
+  useEffect(() => {
+  const handler = setTimeout(() => {
+    setDebouncedQuery(searchQuery);
+  }, 300); 
+
+  return () => {
+    clearTimeout(handler); 
+  };
+}, [searchQuery]);
 
   function calculateRisk(ltv: number, borrowApy: number, tvl: number) {
     let score = 0;
@@ -85,6 +97,7 @@ export default function LendingTable() {
       if (riskFilter === 'high') return item.riskScore > 3;
       return true;
     })
+    .filter(item => item.symbol.toLowerCase().includes(debouncedQuery.toLowerCase()))
     .sort((a, b) => sortOrder === 'asc' ? a.tvl - b.tvl : b.tvl - a.tvl);
 
   const totalPages = Math.ceil(processedData.length / itemsPerPage);
@@ -119,6 +132,19 @@ export default function LendingTable() {
         >
           🔴 Высокий
         </button>
+      </div>
+
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="🔍 Поиск по токену"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full px-3 py-2 border rounded-md text-sm"
+        />
       </div>
 
       <table className="w-full text-sm text-left">
